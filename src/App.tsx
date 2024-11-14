@@ -1,6 +1,6 @@
 import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import AppRouter from './AppRouter';
-import { THEME_OBJECT } from './constants/themeConstants';
+import { THEME_OBJECT } from './constants/theme-constants';
 
 function App() {
   const theme = createTheme(THEME_OBJECT);

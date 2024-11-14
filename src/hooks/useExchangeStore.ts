@@ -1,4 +1,4 @@
-import { AGG_VALUES } from '@app/constants/appConstants';
+import { AGG_VALUES } from '@app/constants/app-constants';
 import {
   CoinPair,
   Level2Data,

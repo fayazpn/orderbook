@@ -1,4 +1,4 @@
-import { FONT_SIZES, FONT_WEIGHT } from '@app/constants/themeConstants';
+import { FONT_SIZES, FONT_WEIGHT } from '@app/constants/theme-constants';
 import * as S from '@app/pages/exchange/ExchangePage.styles';
 
 import { OrderSide } from '@app/types/types';

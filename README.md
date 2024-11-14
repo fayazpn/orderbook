@@ -2,7 +2,7 @@
 
 ### Description:
 
-[LIVE PREVIEW LINK](https://coin-routes-indol.vercel.app/)
+[LIVE PREVIEW LINK]
 
 <hr />
 

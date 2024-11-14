@@ -4,7 +4,7 @@ import {
   MAX_ORDER_DISPLAY,
   PRICE_DECIMALS,
   SIZE_DECIMALS,
-} from '@app/constants/appConstants';
+} from '@app/constants/app-constants';
 
 import { formatNumber, isAllowedPair } from '@app/utils/utils';
 

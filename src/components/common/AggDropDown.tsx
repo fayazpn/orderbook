@@ -1,4 +1,4 @@
-import { AGG_VALUES } from '@app/constants/appConstants';
+import { AGG_VALUES } from '@app/constants/app-constants';
 import { useExchangeStore } from '@app/hooks/useExchangeStore';
 import { InputLabel, MenuItem, Select, Stack } from '@mui/material';
 

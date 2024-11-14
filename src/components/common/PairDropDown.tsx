@@ -1,4 +1,4 @@
-import { ALLOWED_PAIRS } from '@app/constants/appConstants';
+import { ALLOWED_PAIRS } from '@app/constants/app-constants';
 import { useExchangeStore } from '@app/hooks/useExchangeStore';
 import { CoinPair } from '@app/types/types';
 import { isAllowedPair } from '@app/utils/utils';

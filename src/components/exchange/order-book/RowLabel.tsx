@@ -1,4 +1,4 @@
-import { FONT_SIZES } from '@app/constants/themeConstants';
+import { FONT_SIZES } from '@app/constants/theme-constants';
 import * as S from '@app/pages/exchange/ExchangePage.styles';
 import { Stack, Typography } from '@mui/material';
 
