@@ -5,8 +5,10 @@ import {
   Level2Data,
   Level2Snapshot,
   OrderBookLevel,
+  OrderUpdate,
   TickerData,
 } from '@app/types/types';
+import { aggregateOrders } from '@app/utils/utils';
 import { throttle } from 'lodash';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
@@ -52,94 +54,61 @@ export const useExchangeStore = create<ExchangeState>()(
 
       // Order Book Actions
       handleSnapshot: (snapshot) => {
-        const bids = [...snapshot.bids].sort(
-          (a, b) => Number(b[0]) - Number(a[0])
-        );
-        const asks = [...snapshot.asks].sort(
-          (a, b) => Number(a[0]) - Number(b[0])
-        );
+        const bids = [...snapshot.bids]
+          .slice(0, MAX_BOOK_LEVELS)
+          .sort((a, b) => Number(b[0]) - Number(a[0]));
+        const asks = [...snapshot.asks]
+          .slice(0, MAX_BOOK_LEVELS)
+          .sort((a, b) => Number(a[0]) - Number(b[0]));
 
-        const limitedRawBids = bids.slice(0, MAX_BOOK_LEVELS);
-        const limitedRawAsks = asks.slice(0, MAX_BOOK_LEVELS);
+        // const limitedRawBids = bids.slice(0, MAX_BOOK_LEVELS);
+        // const limitedRawAsks = asks.slice(0, MAX_BOOK_LEVELS);
 
-        const aggregatedBids = aggregateOrders(
-          limitedRawBids,
-          get().aggregationValue,
-          false
-        );
-        const aggregatedAsks = aggregateOrders(
-          limitedRawAsks,
-          get().aggregationValue,
-          true
-        );
+        // const aggregatedBids = aggregateOrders(
+        //   bids,
+        //   get().aggregationValue,
+        //   false
+        // );
+        // const aggregatedAsks = aggregateOrders(
+        //   asks,
+        //   get().aggregationValue,
+        //   true
+        // );
 
         set({
-          rawBids: limitedRawBids,
-          rawAsks: limitedRawAsks,
-          bids: aggregatedBids,
-          asks: aggregatedAsks,
+          rawBids: bids,
+          rawAsks: asks,
+          bids: bids,
+          asks: asks,
         });
       },
 
       handleL2Update: throttle((update: Level2Data) => {
-        set((state) => {
-          const newState = update.changes.reduce(
-            (acc, [side, price, size]) => {
-              const orderList =
-                side === 'buy' ? [...state.rawBids] : [...state.rawAsks];
-              const priceLevel = orderList.findIndex(
-                (level) => level[0] === price
-              );
+        const { bids, asks } = get();
+        const bidUpdates = update.changes.filter(
+          (update) => update[0] === 'buy'
+        );
+        const askUpdates = update.changes.filter(
+          (update) => update[0] === 'sell'
+        );
 
-              if (size === '0') {
-                if (priceLevel !== -1) {
-                  orderList.splice(priceLevel, 1);
-                }
-              } else {
-                const newLevel: OrderBookLevel = [price, size];
-                if (priceLevel !== -1) {
-                  orderList[priceLevel] = newLevel;
-                } else {
-                  orderList.push(newLevel);
-                }
-              }
+        const updatedBids = bidUpdates.reduce(
+          (acc, update) => updateOrders(acc, update, true),
+          bids
+        );
 
-              orderList.sort((a, b) =>
-                side === 'buy'
-                  ? Number(b[0]) - Number(a[0])
-                  : Number(a[0]) - Number(b[0])
-              );
+        const updatedAsks = askUpdates.reduce(
+          (acc, update) => updateOrders(acc, update, false),
+          asks
+        );
 
-              const limitedOrders = orderList.slice(0, MAX_BOOK_LEVELS);
+        console.log(bids.length, asks.length);
 
-              if (side === 'buy') {
-                acc.rawBids = limitedOrders;
-              } else {
-                acc.rawAsks = limitedOrders;
-              }
-              return acc;
-            },
-            {
-              rawBids: [...state.rawBids],
-              rawAsks: [...state.rawAsks],
-            }
-          );
-
-          return {
-            ...state,
-            rawBids: newState.rawBids,
-            rawAsks: newState.rawAsks,
-            bids: aggregateOrders(
-              newState.rawBids,
-              state.aggregationValue,
-              false
-            ),
-            asks: aggregateOrders(
-              newState.rawAsks,
-              state.aggregationValue,
-              true
-            ),
-          };
+        set({
+          bids: updatedBids,
+          asks: updatedAsks,
+          rawBids: bids,
+          rawAsks: asks,
         });
       }, 1000),
 
@@ -190,30 +159,26 @@ export const useExchangeStore = create<ExchangeState>()(
   )
 );
 
-const aggregateOrders = (
+const updateOrders = (
   orders: OrderBookLevel[],
-  aggValue: number,
-  isAsk: boolean
+  update: OrderUpdate,
+  isBid: boolean
 ): OrderBookLevel[] => {
-  if (aggValue === AGG_VALUES[0]) return orders;
+  const [price, size] = update.slice(1);
+  const index = orders.findIndex(([p]) => p === price);
+  let newOrders: OrderBookLevel[];
 
-  const aggregatedMap = new Map<string, number>();
+  if (size === '0') {
+    newOrders = index > -1 ? orders.filter((_, i) => i !== index) : orders;
+  } else if (index > -1) {
+    newOrders = orders.map((order, i) => (i === index ? [price, size] : order));
+  } else {
+    newOrders = [...orders, [price, size]];
+  }
 
-  orders.forEach(([price, size]) => {
-    const priceNum = Number(price);
-    const roundedPrice = isAsk
-      ? Math.ceil(priceNum / aggValue) * aggValue
-      : Math.floor(priceNum / aggValue) * aggValue;
-
-    const existingSize = aggregatedMap.get(roundedPrice.toString()) || 0;
-    aggregatedMap.set(roundedPrice.toString(), existingSize + Number(size));
-  });
-
-  const aggregatedOrders: OrderBookLevel[] = Array.from(
-    aggregatedMap.entries()
-  ).map(([price, size]) => [price, size.toString()]);
-
-  return aggregatedOrders.sort((a, b) =>
-    isAsk ? Number(a[0]) - Number(b[0]) : Number(b[0]) - Number(a[0])
-  );
+  return newOrders
+    .sort((a, b) =>
+      isBid ? Number(b[0]) - Number(a[0]) : Number(a[0]) - Number(b[0])
+    )
+    .slice(0, MAX_BOOK_LEVELS);
 };

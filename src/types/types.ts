@@ -9,10 +9,12 @@ export interface Level2Snapshot {
   time: string;
 }
 
+export type OrderUpdate = [OrderSide, string, string];
+
 export interface Level2Data {
   type: 'l2update';
   product_id: string;
-  changes: [OrderSide, string, string][];
+  changes: OrderUpdate[];
   time: string;
 }
 
