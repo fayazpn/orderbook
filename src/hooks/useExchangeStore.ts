@@ -14,17 +14,16 @@ import { devtools } from 'zustand/middleware';
 interface ExchangeState {
   bids: OrderBookLevel[];
   asks: OrderBookLevel[];
-  bestOrders: BestOrders;
+  bestOrders: BestOrders | null;
   currentPair: CoinPair;
   ticker: TickerData[];
-  rawBids: OrderBookLevel[]; // Store raw orders before aggregation
+  rawBids: OrderBookLevel[];
   rawAsks: OrderBookLevel[];
   aggregationValue: number;
   setAggregationValue: (value: number) => void;
   handleSnapshot: (snapshot: Level2Snapshot) => void;
   handleL2Update: (update: Level2Data) => void;
 
-  // Ticker Actions
   handleTickerUpdate: (ticker: TickerData) => void;
   switchPair: (newPair: CoinPair) => void;
 }
@@ -36,14 +35,9 @@ export const useExchangeStore = create<ExchangeState>()(
       currentPair: 'BTC-USD',
       bids: [],
       asks: [],
-      rawBids: [], // New state for raw orders
-      rawAsks: [], // New state for raw orders
-      bestOrders: {
-        bestBid: '0',
-        bestBidSize: '0',
-        bestAsk: '0',
-        bestAskSize: '0',
-      },
+      rawBids: [],
+      rawAsks: [],
+      bestOrders: null,
       ticker: [],
       aggregationValue: AGG_VALUES[0],
 
@@ -65,11 +59,9 @@ export const useExchangeStore = create<ExchangeState>()(
           (a, b) => Number(a[0]) - Number(b[0])
         );
 
-        // Limit raw orders to MAX_BOOK_LEVELS
         const limitedRawBids = bids.slice(0, MAX_BOOK_LEVELS);
         const limitedRawAsks = asks.slice(0, MAX_BOOK_LEVELS);
 
-        // Aggregate the limited raw orders
         const aggregatedBids = aggregateOrders(
           limitedRawBids,
           get().aggregationValue,
@@ -185,17 +177,12 @@ export const useExchangeStore = create<ExchangeState>()(
         // Complete reset when switching pairs
         set({
           currentPair: newPair,
-          ticker: [], // Clear ticker data
+          ticker: [],
           bids: [],
           asks: [],
           rawBids: [],
           rawAsks: [],
-          bestOrders: {
-            bestBid: '0',
-            bestBidSize: '0',
-            bestAsk: '0',
-            bestAskSize: '0',
-          },
+          bestOrders: null,
         });
       },
     }),
@@ -208,12 +195,11 @@ const aggregateOrders = (
   aggValue: number,
   isAsk: boolean
 ): OrderBookLevel[] => {
-  if (aggValue === AGG_VALUES[0]) return orders; // No aggregation needed for smallest value
+  if (aggValue === AGG_VALUES[0]) return orders;
 
   const aggregatedMap = new Map<string, number>();
 
   orders.forEach(([price, size]) => {
-    // Round price to nearest aggregation value
     const priceNum = Number(price);
     const roundedPrice = isAsk
       ? Math.ceil(priceNum / aggValue) * aggValue
@@ -223,12 +209,10 @@ const aggregateOrders = (
     aggregatedMap.set(roundedPrice.toString(), existingSize + Number(size));
   });
 
-  // Convert Map to array of OrderBookLevel
   const aggregatedOrders: OrderBookLevel[] = Array.from(
     aggregatedMap.entries()
   ).map(([price, size]) => [price, size.toString()]);
 
-  // Sort orders
   return aggregatedOrders.sort((a, b) =>
     isAsk ? Number(a[0]) - Number(b[0]) : Number(b[0]) - Number(a[0])
   );

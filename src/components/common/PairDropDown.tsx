@@ -40,6 +40,7 @@ function PairDropDown() {
         labelId="currency-pair-label"
         value={pairname}
         onChange={changeRoute}
+        size="small"
       >
         {ALLOWED_PAIRS.map((pair: string) => (
           <MenuItem key={pair} value={pair}>

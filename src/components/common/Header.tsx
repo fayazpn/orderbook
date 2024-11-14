@@ -1,5 +1,5 @@
 import * as S from '@app/components/layouts/MainLayout.styles';
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import AggDropDown from './AggDropDown';
 import PairDropDown from './PairDropDown';
 
@@ -15,7 +15,7 @@ function Header() {
           mx="auto"
         >
           <AggDropDown />
-          <Typography>CR Exchange</Typography>
+
           <PairDropDown />
         </Stack>
       </S.TopNavWrapper>

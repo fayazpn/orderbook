@@ -5,6 +5,7 @@ import {
   Level2Snapshot,
   TickerData,
 } from '@app/types/types';
+import { isAllowedPair } from '@app/utils/utils';
 import { useCallback, useEffect } from 'react';
 import useWebSocket from 'react-use-websocket';
 import { useExchangeStore } from './useExchangeStore';
@@ -18,6 +19,10 @@ interface CoinbaseWSSub {
 type WSMessageType = Level2Snapshot | Level2Data | TickerData;
 
 const useCoinbaseWebSocket = (coin: CoinPair) => {
+  if (!isAllowedPair(coin)) {
+    return;
+  }
+
   const { handleSnapshot, handleL2Update, handleTickerUpdate } =
     useExchangeStore();
 

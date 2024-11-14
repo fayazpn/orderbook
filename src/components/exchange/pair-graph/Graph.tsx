@@ -1,4 +1,8 @@
+import Loader from '@app/components/common/Loader';
+import NoData from '@app/components/common/NoData';
 import { useExchangeStore } from '@app/hooks/useExchangeStore';
+import { CoinPair } from '@app/types/types';
+import { isAllowedPair } from '@app/utils/utils';
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -11,6 +15,7 @@ import {
 } from 'chart.js';
 import { useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
+import { useParams } from 'react-router-dom';
 
 // Register ChartJS components
 ChartJS.register(
@@ -27,8 +32,8 @@ const options = {
   responsive: true,
   animation: false as false | object,
   tooltips: {
-    mode: 'index', // Display one tooltip per data point
-    intersect: false, // Display tooltip even when not intersecting a point
+    mode: 'index',
+    intersect: false,
     callbacks: {
       label: (context: any) => {
         const { label, formattedValue } = context.dataset[context.dataIndex];
@@ -68,17 +73,6 @@ const options = {
       },
     },
   },
-  // interaction: {
-  //   intersect: false,
-  //   axis: 'x',
-  // },
-  // plugins: {
-  //   title: {
-  //     display: true,
-  //     text: (ctx) =>
-  //       'Step ' + ctx.chart.data.datasets[0].stepped + ' Interpolation',
-  //   },
-  // },
 };
 
 function Graph() {
@@ -94,8 +88,6 @@ function Graph() {
       });
     });
   }, [ticker]);
-
-  // console.log(ticker);
 
   const chartData = {
     labels,
@@ -118,6 +110,17 @@ function Graph() {
       },
     ],
   };
+
+  const params = useParams();
+  const pair = params.id as CoinPair;
+
+  if (!pair || !isAllowedPair(pair)) {
+    return <NoData />;
+  }
+
+  if (!ticker.length) {
+    return <Loader />;
+  }
 
   return <Line data={chartData} options={options} />;
 }
