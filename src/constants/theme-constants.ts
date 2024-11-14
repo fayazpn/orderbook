@@ -115,18 +115,6 @@ export const THEME_OBJECT: ThemeOptions = {
         },
       },
     },
-    MuiMenu: {
-      styleOverrides: {
-        list: {
-          '&.base-select .MuiMenuItem-root': {
-            fontSize: FONT_SIZES.xs,
-            [`&:hover`]: {
-              backgroundColor: '#010308',
-            },
-          },
-        },
-      },
-    },
     MuiSelect: {
       styleOverrides: {
         icon: {

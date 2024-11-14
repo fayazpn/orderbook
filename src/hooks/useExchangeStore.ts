@@ -1,57 +1,22 @@
-import { AGG_VALUES } from '@app/constants/app-constants';
+import { AGG_VALUES, MAX_BOOK_LEVELS } from '@app/constants/app-constants';
 import {
+  BestOrders,
   CoinPair,
   Level2Data,
   Level2Snapshot,
-  OrderSide,
+  OrderBookLevel,
   TickerData,
 } from '@app/types/types';
 import { throttle } from 'lodash';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
-// Order Book Types
-type OrderBookLevel = [string, string]; // [price, size]
-
-interface BestOrders {
-  bestBid: string;
-  bestBidSize: string;
-  bestAsk: string;
-  bestAskSize: string;
-}
-
-interface OrderBookState {
+interface ExchangeState {
   bids: OrderBookLevel[];
   asks: OrderBookLevel[];
   bestOrders: BestOrders;
-}
-
-// Ticker Types
-interface TickerState {
-  type: 'ticker';
-  trade_id: number;
-  sequence: number;
-  time: string;
-  product_id: string;
-  price: string;
-  open_24h: string;
-  volume_24h: string;
-  low_24h: string;
-  high_24h: string;
-  volume_30d: string;
-  best_bid: string;
-  best_bid_size: string;
-  best_ask: string;
-  best_ask_size: string;
-  side: OrderSide;
-  time_micro: string;
-  last_size: string;
-}
-
-// Combined State & Actions
-interface ExchangeState extends OrderBookState {
   currentPair: CoinPair;
-  ticker: TickerState[];
+  ticker: TickerData[];
   rawBids: OrderBookLevel[]; // Store raw orders before aggregation
   rawAsks: OrderBookLevel[];
   aggregationValue: number;
@@ -63,8 +28,6 @@ interface ExchangeState extends OrderBookState {
   handleTickerUpdate: (ticker: TickerData) => void;
   switchPair: (newPair: CoinPair) => void;
 }
-
-const MAX_BOOK_LEVELS = 150; // Keep top 100 levels for each side
 
 export const useExchangeStore = create<ExchangeState>()(
   devtools(

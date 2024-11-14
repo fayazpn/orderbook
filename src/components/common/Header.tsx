@@ -1,4 +1,4 @@
-import * as S from '@app/layouts/MainLayout/MainLayout.styles';
+import * as S from '@app/components/layouts/MainLayout.styles';
 import { Box, Stack, Typography } from '@mui/material';
 import AggDropDown from './AggDropDown';
 import PairDropDown from './PairDropDown';

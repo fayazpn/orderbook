@@ -16,6 +16,21 @@ export interface Level2Data {
   time: string;
 }
 
+export type OrderBookLevel = [string, string];
+
+export interface BestOrders {
+  bestBid: string;
+  bestBidSize: string;
+  bestAsk: string;
+  bestAskSize: string;
+}
+
+export interface OrderBookState {
+  bids: OrderBookLevel[];
+  asks: OrderBookLevel[];
+  bestOrders: BestOrders;
+}
+
 export interface TickerData {
   type: 'ticker';
   trade_id: number;

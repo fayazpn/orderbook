@@ -1,6 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
-import MainLayout from './layouts/MainLayout/MainLayout';
+import MainLayout from './components/layouts/MainLayout';
 import ExchangePage from './pages/exchange/ExchangePage';
 
 function AppRouter() {

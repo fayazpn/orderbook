@@ -1,3 +1,4 @@
+import { COINBASE_WS_URL } from '@app/constants/app-constants';
 import {
   CoinPair,
   Level2Data,
@@ -15,8 +16,6 @@ interface CoinbaseWSSub {
 }
 
 type WSMessageType = Level2Snapshot | Level2Data | TickerData;
-
-const COINBASE_WS_URL = 'wss://ws-feed.exchange.coinbase.com';
 
 const useCoinbaseWebSocket = (coin: CoinPair) => {
   const { handleSnapshot, handleL2Update, handleTickerUpdate } =
@@ -45,18 +44,15 @@ const useCoinbaseWebSocket = (coin: CoinPair) => {
     [handleSnapshot, handleL2Update, handleTickerUpdate]
   );
 
-  const { sendJsonMessage, lastJsonMessage } = useWebSocket<WSMessageType>(
-    COINBASE_WS_URL,
-    {
-      onOpen: () => console.log('Socket connection opened'),
-      onClose: () => console.log('Socket connection closed'),
-      onError: (event) => console.error('WebSocket error:', event),
-      onMessage: handleMessage,
-      shouldReconnect: () => true,
-      reconnectInterval: 3000,
-      reconnectAttempts: 10,
-    }
-  );
+  const { sendJsonMessage } = useWebSocket<WSMessageType>(COINBASE_WS_URL, {
+    onOpen: () => console.log('Socket connection opened'),
+    onClose: () => console.log('Socket connection closed'),
+    onError: (event) => console.error('WebSocket error:', event),
+    onMessage: handleMessage,
+    shouldReconnect: () => true,
+    reconnectInterval: 3000,
+    reconnectAttempts: 10,
+  });
 
   useEffect(() => {
     const subscribeMessage: CoinbaseWSSub = {
@@ -76,10 +72,6 @@ const useCoinbaseWebSocket = (coin: CoinPair) => {
       sendJsonMessage(unsubscribeMessage);
     };
   }, [coin, sendJsonMessage]);
-
-  return {
-    lastJsonMessage,
-  };
 };
 
 export default useCoinbaseWebSocket;
