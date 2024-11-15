@@ -4,19 +4,24 @@ import * as S from '@app/pages/exchange/ExchangePage.styles';
 import { OrderSide } from '@app/types/types';
 import { Stack, styled, Typography } from '@mui/material';
 import { green, red } from '@mui/material/colors';
-import { memo, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-// Styled component for the flashing row
 const FlashingRow = styled(S.RowData)<{
   $isFlashing: boolean;
   $side: OrderSide;
 }>(({ $isFlashing, $side }) => ({
-  transition: 'background-color 0.5s ease-out',
-  backgroundColor: $isFlashing
-    ? $side === 'sell'
-      ? 'rgba(255, 0, 0, 0.1)' // Light red flash for sells
-      : 'rgba(0, 255, 0, 0.1)' // Light green flash for buys
-    : 'transparent',
+  position: 'relative',
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: $side === 'sell' ? red[500] : green[500],
+    opacity: $isFlashing ? 0.15 : 0,
+    transition: 'opacity 0.3s ease-out',
+  },
 }));
 
 type RowDataProps = {
@@ -43,7 +48,7 @@ function RowData({ side, size, price, highlight }: RowDataProps) {
 
       return () => clearTimeout(timeout);
     }
-  }, [highlight]);
+  }, [highlight, size]);
 
   return (
     <FlashingRow $isFlashing={isFlashing} $side={side}>
@@ -78,15 +83,15 @@ function RowData({ side, size, price, highlight }: RowDataProps) {
     </FlashingRow>
   );
 }
-// const MemoizedRowData = RowData;
-// Now we want to memo this component to prevent unnecessary re-renders
-const MemoizedRowData = memo(RowData, (prevProps, nextProps) => {
-  // Only re-render if any of these props change
-  return (
-    prevProps.price === nextProps.price &&
-    prevProps.size === nextProps.size &&
-    prevProps.highlight === nextProps.highlight &&
-    prevProps.side === nextProps.side
-  );
-});
-export default MemoizedRowData;
+// // const MemoizedRowData = RowData;
+// // Now we want to memo this component to prevent unnecessary re-renders
+// const MemoizedRowData = memo(RowData, (prevProps, nextProps) => {
+//   // Only re-render if any of these props change
+//   return (
+//     prevProps.price === nextProps.price &&
+//     prevProps.size === nextProps.size &&
+//     prevProps.highlight === nextProps.highlight &&
+//     prevProps.side === nextProps.side
+//   );
+// });
+export default RowData;
