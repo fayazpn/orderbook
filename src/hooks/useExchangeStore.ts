@@ -1,4 +1,4 @@
-import { MAX_BOOK_LEVELS } from '@app/constants/app-constants';
+import { AGG_VALUES, MAX_BOOK_LEVELS } from '@app/constants/app-constants';
 import {
   BestOrders,
   CoinPair,
@@ -18,11 +18,9 @@ interface ExchangeState {
   bestOrders: BestOrders | null;
   currentPair: CoinPair;
   ticker: TickerData[];
+  aggregationValue: number;
+  setAggregationValue: (value: number) => void;
   handleSnapshot: (snapshot: Level2Snapshot) => void;
-  // handleBidUpdate: any;
-  // handleAskUpdate: any;
-  // updateBids: (update: OrderUpdate) => void;
-  // updateAsks: (update: OrderUpdate) => void;
   applyUpdates: () => void;
   handleL2Update: (update: Level2Data) => void;
   handleTickerUpdate: (ticker: TickerData) => void;
@@ -42,6 +40,13 @@ export const useExchangeStore = create<ExchangeState>()(
       asks: [],
       bestOrders: null,
       ticker: [],
+      aggregationValue: AGG_VALUES[0],
+      setAggregationValue: (value) => {
+        set({
+          aggregationValue: value,
+        });
+      },
+
       handleSnapshot: (snapshot) => {
         set({
           bids: snapshot.bids
@@ -53,11 +58,7 @@ export const useExchangeStore = create<ExchangeState>()(
         });
       },
 
-      // Main update handler now calls separate bid/ask handlers
       handleL2Update: (update: Level2Data) => {
-        // const { handleBidUpdate, handleAskUpdate } = get();
-        // handleBidUpdate(update.changes);
-        // handleAskUpdate(update.changes);
         const { currentPair } = get();
 
         if (update.product_id !== currentPair) {
@@ -67,7 +68,6 @@ export const useExchangeStore = create<ExchangeState>()(
           if (change[0] === 'buy') {
             updateQueue.bids.push(change);
           } else {
-            // sell
             updateQueue.asks.push(change);
           }
         });
@@ -95,7 +95,6 @@ export const useExchangeStore = create<ExchangeState>()(
       handleTickerUpdate: throttle(
         (ticker) =>
           set((state) => {
-            // Only update if the ticker matches current pair
             if (ticker.product_id !== state.currentPair) {
               return state;
             }

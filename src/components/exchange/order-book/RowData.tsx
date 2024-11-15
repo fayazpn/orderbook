@@ -9,13 +9,10 @@ type RowDataProps = {
   side: OrderSide;
   size: string;
   price: string;
-  // total: string;
-  // depth: number;
 };
 
-// Color constants using Material UI palette
-const SELL_COLOR = red[500]; // Red for asks
-const BUY_COLOR = green[500]; // Green for bids
+const SELL_COLOR = red[500];
+const BUY_COLOR = green[500];
 
 function RowData({ side, size, price }: RowDataProps) {
   return (
@@ -50,5 +47,5 @@ function RowData({ side, size, price }: RowDataProps) {
     </S.RowData>
   );
 }
-
-export default RowData;
+const MemoizedRowData = RowData;
+export default MemoizedRowData;

@@ -31,9 +31,7 @@ export const aggregateOrders = (
 
   const aggregatedOrders: OrderBookLevel[] = Array.from(
     aggregatedMap.entries()
-  ).map(([price, size]) => [price, size.toString()]);
+  ).map(([price, size]) => [Number(price), size]);
 
-  return aggregatedOrders.sort((a, b) =>
-    isAsk ? Number(a[0]) - Number(b[0]) : Number(b[0]) - Number(a[0])
-  );
+  return aggregatedOrders.sort((a, b) => (isAsk ? a[0] - b[0] : b[0] - a[0]));
 };

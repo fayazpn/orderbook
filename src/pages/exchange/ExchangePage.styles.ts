@@ -7,20 +7,6 @@ export const TopStatsWrapper = styled(Paper)({
 
 type StatsCardProps = { $side: OrderSide };
 
-// export const StatsCard = styled(Card)(({ $side }: StatsCardProps) => ({
-//   // background:
-//   //   $side === 'buy'
-//   //     ? 'linear-gradient(to bottom, #2194ff78, transparent)'
-//   //     : 'linear-gradient(to bottom, #a0a04e, transparent)',
-//   background:
-//     $side === 'buy'
-//       ? 'green'
-//       : 'linear-gradient(to bottom, #a0a04e, transparent)',
-//   borderRadius: '.8em',
-//   // marginTop: '1em',
-//   minWidth: '30rem',
-// }));
-
 export const StatsCard = styled(Card)(({ $side }: StatsCardProps) => ({
   background:
     $side === 'buy'
@@ -31,7 +17,7 @@ export const StatsCard = styled(Card)(({ $side }: StatsCardProps) => ({
       ? '0 0 20px rgba(0, 255, 0, 0.15), inset 0 0 30px rgba(0, 255, 0, 0.1)'
       : '0 0 20px rgba(255, 0, 0, 0.15), inset 0 0 30px rgba(255, 0, 0, 0.1)',
   backdropFilter: 'blur(10px)',
-  borderRadius: '.8em',
+  borderRadius: '.2em',
   minWidth: '30rem',
   border:
     $side === 'buy'
@@ -72,7 +58,6 @@ export const RowLabel = styled(Paper)({
 export const RowData = styled(Paper)({
   marginInline: 'auto',
   border: 0,
-  // marginBottom: '-.5em',
   position: 'relative',
   zIndex: 2,
 });

@@ -1,5 +1,6 @@
 import * as S from '@app/components/layouts/MainLayout.styles';
 import { Box, Stack } from '@mui/material';
+import AggDropDown from './AggDropDown';
 import PairDropDown from './PairDropDown';
 
 function Header() {
@@ -13,7 +14,7 @@ function Header() {
           width="100%"
           mx="auto"
         >
-          {/* <AggDropDown /> */}
+          <AggDropDown />
 
           <PairDropDown />
         </Stack>
