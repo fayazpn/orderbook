@@ -76,9 +76,9 @@ export const LoadingContainer = styled(Stack)({
 });
 
 export const FlashingRow = styled(RowData)<{
-  $isFlashing: boolean;
+  $isflashing: boolean;
   $side: OrderSide;
-}>(({ $isFlashing, $side }) => ({
+}>(({ $isflashing, $side }) => ({
   position: 'relative',
   '&::after': {
     content: '""',
@@ -88,7 +88,7 @@ export const FlashingRow = styled(RowData)<{
     right: 0,
     bottom: 0,
     backgroundColor: $side === 'sell' ? red[500] : green[500],
-    opacity: $isFlashing ? 0.2 : 0,
+    opacity: $isflashing ? 0.2 : 0,
     transition: 'opacity 0.3s',
   },
 }));

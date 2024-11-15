@@ -33,7 +33,7 @@ function RowData({ side, size, price, highlight }: RowDataProps) {
   }, [highlight, size]);
 
   return (
-    <S.FlashingRow $isFlashing={isFlashing} $side={side}>
+    <S.FlashingRow $isflashing={isFlashing} $side={side}>
       <Stack direction="row" justifyContent="space-between" paddingInline={2}>
         <Typography
           variant="subtitle1"
