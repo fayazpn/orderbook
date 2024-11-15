@@ -29,7 +29,8 @@ export const StatsCard = styled(Card)(({ $side }: StatsCardProps) => ({
 
 export const PairGraphWrapper = styled(Paper)({
   padding: '1rem 2rem',
-  minHeight: '50rem',
+  // minHeight: '50rem',
+  // height: '100%',
 });
 
 export const PairGraphContainer = styled(Paper)({

@@ -16,7 +16,8 @@ import Spread from './Spread';
 
 function OrderBook() {
   const params = useParams();
-  const { bids, asks, aggregationValue } = useExchangeStore();
+  const { bids, asks, aggregationValue, lastBids, lastAsks } =
+    useExchangeStore();
 
   const isValidPair = useMemo(() => isAllowedPair(params.id), [params.id]);
   if (!isValidPair) {
@@ -46,21 +47,23 @@ function OrderBook() {
   return (
     <>
       <RowLabel />
-      {topBids.map(([price, size]) => (
+      {topBids.map(([price, size], index) => (
         <MemoizedRowData
           key={price}
           size={formatNumber(size, SIZE_DECIMALS)}
           price={formatNumber(price, PRICE_DECIMALS)}
           side="buy"
+          highlight={topBids[index] === lastBids[index]}
         />
       ))}
       <Spread currency="USD" spreadAmnt={1} />
-      {topAsks.map(([price, size]) => (
+      {topAsks.map(([price, size], index) => (
         <MemoizedRowData
           key={price}
           size={formatNumber(size, SIZE_DECIMALS)}
           price={formatNumber(price, PRICE_DECIMALS)}
           side="sell"
+          highlight={topAsks[index] === lastAsks[index]}
         />
       ))}
     </>

@@ -8,6 +8,7 @@ import {
   OrderUpdate,
   TickerData,
 } from '@app/types/types';
+import { updateOrders } from '@app/utils/utils';
 import { throttle } from 'lodash';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
@@ -15,13 +16,15 @@ import { devtools } from 'zustand/middleware';
 interface ExchangeState {
   bids: OrderBookLevel[];
   asks: OrderBookLevel[];
+  lastBids: OrderBookLevel[];
+  lastAsks: OrderBookLevel[];
   bestOrders: BestOrders | null;
   currentPair: CoinPair;
   ticker: TickerData[];
   aggregationValue: number;
   setAggregationValue: (value: number) => void;
   handleSnapshot: (snapshot: Level2Snapshot) => void;
-  applyUpdates: () => void;
+  updateOrders: () => void;
   handleL2Update: (update: Level2Data) => void;
   handleTickerUpdate: (ticker: TickerData) => void;
   switchPair: (newPair: CoinPair) => void;
@@ -38,6 +41,8 @@ export const useExchangeStore = create<ExchangeState>()(
       currentPair: 'BTC-USD',
       bids: [],
       asks: [],
+      lastBids: [],
+      lastAsks: [],
       bestOrders: null,
       ticker: [],
       aggregationValue: AGG_VALUES[0],
@@ -73,7 +78,7 @@ export const useExchangeStore = create<ExchangeState>()(
         });
       },
 
-      applyUpdates: throttle(() => {
+      updateOrders: throttle(() => {
         const { bids, asks } = get();
         const updatedBids = updateQueue.bids.reduce(
           (acc, update) => updateOrders(acc, update),
@@ -85,6 +90,8 @@ export const useExchangeStore = create<ExchangeState>()(
         );
 
         set({
+          lastBids: bids,
+          lastAsks: asks,
           bids: updatedBids.slice(0, MAX_BOOK_LEVELS),
           asks: updatedAsks.slice(0, MAX_BOOK_LEVELS),
         });
@@ -134,20 +141,3 @@ export const useExchangeStore = create<ExchangeState>()(
     { name: 'exchange-store' }
   )
 );
-
-const updateOrders = (
-  orders: OrderBookLevel[],
-  update: OrderUpdate
-): OrderBookLevel[] => {
-  const [price, size] = update.slice(1).map(parseFloat);
-  const index = orders.findIndex(([p]) => p === price);
-
-  if (size === 0) {
-    return index > -1 ? orders.filter((_, i) => i !== index) : orders;
-  } else if (index > -1) {
-    return orders.map((order, i) => (i === index ? [price, size] : order));
-  } else {
-    const newOrders = [...orders, [price, size]];
-    return newOrders.sort((a, b) => a[0] - b[0]) as OrderBookLevel[];
-  }
-};

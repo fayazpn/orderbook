@@ -1,7 +1,6 @@
 import { OrderSide } from '@app/types/types';
 
 type SizeHighlightType = {
-  depth: number;
   orderSide: OrderSide;
 };
 
@@ -10,14 +9,14 @@ const DepthVisualizerColors = {
   ASKS: '#3d1e28',
 };
 
-function SizeHighlight({ depth, orderSide }: SizeHighlightType) {
+function SizeHighlight({ orderSide }: SizeHighlightType) {
   return (
     <div
       data-testid="depth-visualizer"
       style={{
         backgroundColor: `${orderSide === 'buy' ? DepthVisualizerColors.BIDS : DepthVisualizerColors.ASKS}`,
         height: '100%',
-        width: `${depth}%`,
+        width: `100%`,
         position: 'absolute',
         top: 0,
         zIndex: -1,
