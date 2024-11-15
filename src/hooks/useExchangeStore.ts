@@ -1,97 +1,3 @@
-// import {
-//   BestOrders,
-//   CoinPair,
-//   Level2Data,
-//   Level2Snapshot,
-//   OrderBookLevel,
-//   TickerData,
-// } from '@app/types/types';
-// import { throttle } from 'lodash';
-// import { create } from 'zustand';
-// import { devtools } from 'zustand/middleware';
-
-// interface ExchangeState {
-//   bids: OrderBookLevel[];
-//   asks: OrderBookLevel[];
-//   bestOrders: BestOrders | null;
-//   currentPair: CoinPair;
-//   handleSnapshot: (snapshot: Level2Snapshot) => void;
-//   handleL2Update: (update: Level2Data) => void;
-//   handleTickerUpdate: (ticker: TickerData) => void;
-//   switchPair: (newPair: CoinPair) => void;
-// }
-
-// export const useExchangeStore = create<ExchangeState>()(
-//   devtools(
-//     (set, get) => ({
-//       currentPair: 'BTC-USD',
-//       bids: [],
-//       asks: [],
-//       bestOrders: null,
-
-//       handleSnapshot: (snapshot) => {
-//         set({
-//           bids: snapshot.bids,
-//           asks: snapshot.asks,
-//         });
-//       },
-
-//       handleL2Update: throttle((update: Level2Data) => {
-//         const state = get();
-//         let bids = [...state.bids];
-//         let asks = [...state.asks];
-
-//         update.changes.forEach(([side, price, size]) => {
-//           if (side === 'buy') {
-//             const index = bids.findIndex(([p]) => p === price);
-//             if (Number(size) === 0 && index !== -1) {
-//               bids = bids.filter((_, i) => i !== index);
-//             } else if (index !== -1) {
-//               bids[index] = [price, size];
-//             } else {
-//               bids.push([price, size]);
-//             }
-//           } else {
-//             const index = asks.findIndex(([p]) => p === price);
-//             if (Number(size) === 0 && index !== -1) {
-//               asks = asks.filter((_, i) => i !== index);
-//             } else if (index !== -1) {
-//               asks[index] = [price, size];
-//             } else {
-//               asks.push([price, size]);
-//             }
-//           }
-//         });
-
-//         set({ bids, asks });
-//       }, 250),
-
-//       handleTickerUpdate: (ticker) => {
-//         if (ticker.product_id !== get().currentPair) return;
-//         set({
-//           bestOrders: {
-//             bestBid: ticker.best_bid,
-//             bestBidSize: ticker.best_bid_size,
-//             bestAsk: ticker.best_ask,
-//             bestAskSize: ticker.best_ask_size,
-//           },
-//         });
-//       },
-
-//       switchPair: (newPair: CoinPair) => {
-//         if (newPair === get().currentPair) return;
-//         set({
-//           currentPair: newPair,
-//           bids: [],
-//           asks: [],
-//           bestOrders: null,
-//         });
-//       },
-//     }),
-//     { name: 'exchange-store' }
-//   )
-// );
-
 import {
   BestOrders,
   CoinPair,
@@ -109,6 +15,7 @@ interface ExchangeState {
   asks: OrderBookLevel[];
   bestOrders: BestOrders | null;
   currentPair: CoinPair;
+  ticker: TickerData[];
   handleSnapshot: (snapshot: Level2Snapshot) => void;
   handleBidUpdate: any;
   handleAskUpdate: any;
@@ -124,7 +31,7 @@ export const useExchangeStore = create<ExchangeState>()(
       bids: [],
       asks: [],
       bestOrders: null,
-
+      ticker: [],
       handleSnapshot: (snapshot) => {
         set({
           bids: snapshot.bids,
@@ -182,17 +89,32 @@ export const useExchangeStore = create<ExchangeState>()(
         handleAskUpdate(update.changes);
       },
 
-      handleTickerUpdate: (ticker) => {
-        if (ticker.product_id !== get().currentPair) return;
-        set({
-          bestOrders: {
-            bestBid: ticker.best_bid,
-            bestBidSize: ticker.best_bid_size,
-            bestAsk: ticker.best_ask,
-            bestAskSize: ticker.best_ask_size,
-          },
-        });
-      },
+      handleTickerUpdate: throttle(
+        (ticker) =>
+          set((state) => {
+            // Only update if the ticker matches current pair
+            if (ticker.product_id !== state.currentPair) {
+              return state;
+            }
+
+            const currentTime = new Date().getTime();
+            const oneMinuteAgo = currentTime - 60000;
+            const newTickerData = [...state.ticker, ticker];
+            return {
+              bestOrders: {
+                bestBid: ticker.best_bid,
+                bestBidSize: ticker.best_bid_size,
+                bestAsk: ticker.best_ask,
+                bestAskSize: ticker.best_ask_size,
+              },
+              ticker: newTickerData.filter((item) => {
+                const timestamp = new Date(item.time).getTime();
+                return timestamp >= oneMinuteAgo;
+              }),
+            };
+          }),
+        1500
+      ),
 
       switchPair: (newPair: CoinPair) => {
         if (newPair === get().currentPair) return;
@@ -200,6 +122,7 @@ export const useExchangeStore = create<ExchangeState>()(
           currentPair: newPair,
           bids: [],
           asks: [],
+          ticker: [],
           bestOrders: null,
         });
       },
