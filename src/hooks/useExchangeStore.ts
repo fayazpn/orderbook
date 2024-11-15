@@ -35,7 +35,7 @@ const updateQueue: { bids: OrderUpdate[]; asks: OrderUpdate[] } = {
   asks: [],
 };
 
-export const useExchangeStore = create<ExchangeState>()(
+const useExchangeStore = create<ExchangeState>()(
   devtools(
     (set, get) => ({
       currentPair: 'BTC-USD',
@@ -141,3 +141,5 @@ export const useExchangeStore = create<ExchangeState>()(
     { name: 'exchange-store' }
   )
 );
+
+export default useExchangeStore;

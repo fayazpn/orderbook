@@ -1,7 +1,6 @@
 import Loader from '@app/components/common/Loader';
 import NoData from '@app/components/common/NoData';
-import { useExchangeStore } from '@app/hooks/useExchangeStore';
-import { CoinPair } from '@app/types/types';
+import useExchangeStore from '@app/hooks/useExchangeStore';
 import { isAllowedPair } from '@app/utils/utils';
 import {
   CategoryScale,
@@ -17,7 +16,6 @@ import { useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
 import { useParams } from 'react-router-dom';
 
-// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -112,9 +110,8 @@ function Graph() {
   };
 
   const params = useParams();
-  const pair = params.id as CoinPair;
-
-  if (!pair || !isAllowedPair(pair)) {
+  const isValidPair = useMemo(() => isAllowedPair(params.id), [params.id]);
+  if (!isValidPair) {
     return <NoData />;
   }
 

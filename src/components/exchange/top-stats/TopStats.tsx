@@ -1,9 +1,10 @@
 import Loader from '@app/components/common/Loader';
 import NoData from '@app/components/common/NoData';
 
-import { useExchangeStore } from '@app/hooks/useExchangeStore';
+import useExchangeStore from '@app/hooks/useExchangeStore';
 import { CoinPair } from '@app/types/types';
 import { isAllowedPair } from '@app/utils/utils';
+import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import StatsCard from './StatsCard';
 
@@ -13,7 +14,8 @@ function TopStats() {
 
   const bestOrders = useExchangeStore((state) => state.bestOrders);
 
-  if (!pair || !isAllowedPair(pair)) {
+  const isValidPair = useMemo(() => isAllowedPair(params.id), [params.id]);
+  if (!isValidPair) {
     return <NoData />;
   }
 

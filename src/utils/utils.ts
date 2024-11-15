@@ -52,3 +52,11 @@ export const updateOrders = (
     return newOrders.sort((a, b) => a[0] - b[0]) as OrderBookLevel[];
   }
 };
+
+export const hasChanged = (
+  current: OrderBookLevel,
+  prev: OrderBookLevel | undefined
+) => {
+  if (!prev) return true;
+  return current[1] !== prev[1];
+};

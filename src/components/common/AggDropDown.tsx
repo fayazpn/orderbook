@@ -1,5 +1,5 @@
 import { AGG_VALUES } from '@app/constants/app-constants';
-import { useExchangeStore } from '@app/hooks/useExchangeStore';
+import useExchangeStore from '@app/hooks/useExchangeStore';
 import { InputLabel, MenuItem, Select, Stack } from '@mui/material';
 
 function AggDropDown() {

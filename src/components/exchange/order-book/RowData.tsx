@@ -2,27 +2,9 @@ import { FONT_SIZES, FONT_WEIGHT } from '@app/constants/theme-constants';
 import * as S from '@app/pages/exchange/ExchangePage.styles';
 
 import { OrderSide } from '@app/types/types';
-import { Stack, styled, Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import { green, red } from '@mui/material/colors';
 import { useEffect, useState } from 'react';
-
-const FlashingRow = styled(S.RowData)<{
-  $isFlashing: boolean;
-  $side: OrderSide;
-}>(({ $isFlashing, $side }) => ({
-  position: 'relative',
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: $side === 'sell' ? red[500] : green[500],
-    opacity: $isFlashing ? 0.15 : 0,
-    transition: 'opacity 0.3s ease-out',
-  },
-}));
 
 type RowDataProps = {
   side: OrderSide;
@@ -51,8 +33,7 @@ function RowData({ side, size, price, highlight }: RowDataProps) {
   }, [highlight, size]);
 
   return (
-    <FlashingRow $isFlashing={isFlashing} $side={side}>
-      {/* <S.RowData> */}
+    <S.FlashingRow $isFlashing={isFlashing} $side={side}>
       <Stack direction="row" justifyContent="space-between" paddingInline={2}>
         <Typography
           variant="subtitle1"
@@ -79,19 +60,8 @@ function RowData({ side, size, price, highlight }: RowDataProps) {
           -
         </Typography>
       </Stack>
-      {/* </S.RowData> */}
-    </FlashingRow>
+    </S.FlashingRow>
   );
 }
-// // const MemoizedRowData = RowData;
-// // Now we want to memo this component to prevent unnecessary re-renders
-// const MemoizedRowData = memo(RowData, (prevProps, nextProps) => {
-//   // Only re-render if any of these props change
-//   return (
-//     prevProps.price === nextProps.price &&
-//     prevProps.size === nextProps.size &&
-//     prevProps.highlight === nextProps.highlight &&
-//     prevProps.side === nextProps.side
-//   );
-// });
+
 export default RowData;

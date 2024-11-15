@@ -9,18 +9,10 @@ function RowLabel() {
         <Typography variant="subtitle2" fontSize={FONT_SIZES.xs}>
           Market Size
         </Typography>
-        <Typography
-          variant="subtitle2"
-          fontSize={FONT_SIZES.xs}
-          // marginLeft="-1rem"
-        >
+        <Typography variant="subtitle2" fontSize={FONT_SIZES.xs}>
           Price(USD)
         </Typography>
-        <Typography
-          variant="subtitle2"
-          fontSize={FONT_SIZES.xs}
-          // marginLeft="-2rem"
-        >
+        <Typography variant="subtitle2" fontSize={FONT_SIZES.xs}>
           My Size
         </Typography>
       </Stack>

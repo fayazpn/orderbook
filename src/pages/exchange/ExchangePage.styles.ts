@@ -1,5 +1,6 @@
 import { OrderSide } from '@app/types/types';
 import { Box, Card, Paper, Stack, styled } from '@mui/material';
+import { green, red } from '@mui/material/colors';
 
 export const TopStatsWrapper = styled(Paper)({
   padding: '1rem 2rem',
@@ -29,8 +30,6 @@ export const StatsCard = styled(Card)(({ $side }: StatsCardProps) => ({
 
 export const PairGraphWrapper = styled(Paper)({
   padding: '1rem 2rem',
-  // minHeight: '50rem',
-  // height: '100%',
 });
 
 export const PairGraphContainer = styled(Paper)({
@@ -42,7 +41,6 @@ export const PairGraphContainer = styled(Paper)({
 
 export const OrderBookWrapper = styled(Paper)({
   padding: '.5em 1em',
-  // minHeight: '25rem',
 });
 
 export const OrderBookContainer = styled(Box)({
@@ -76,3 +74,21 @@ export const AggrigateContainer = styled(Paper)({
 export const LoadingContainer = styled(Stack)({
   minHeight: '30rem',
 });
+
+export const FlashingRow = styled(RowData)<{
+  $isFlashing: boolean;
+  $side: OrderSide;
+}>(({ $isFlashing, $side }) => ({
+  position: 'relative',
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: $side === 'sell' ? red[500] : green[500],
+    opacity: $isFlashing ? 0.2 : 0,
+    transition: 'opacity 0.3s',
+  },
+}));

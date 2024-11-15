@@ -5,9 +5,13 @@ import {
   PRICE_DECIMALS,
   SIZE_DECIMALS,
 } from '@app/constants/app-constants';
-import { useExchangeStore } from '@app/hooks/useExchangeStore';
-import { OrderBookLevel } from '@app/types/types';
-import { aggregateOrders, formatNumber, isAllowedPair } from '@app/utils/utils';
+import useExchangeStore from '@app/hooks/useExchangeStore';
+import {
+  aggregateOrders,
+  formatNumber,
+  hasChanged,
+  isAllowedPair,
+} from '@app/utils/utils';
 import { memo, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import MemoizedRowData from './RowData';
@@ -20,18 +24,6 @@ const OrderBook = memo(() => {
     useExchangeStore();
 
   const isValidPair = useMemo(() => isAllowedPair(params.id), [params.id]);
-  if (!isValidPair) {
-    return <NoData />;
-  }
-
-  // Compare current value with previous value
-  const hasChanged = (
-    current: OrderBookLevel,
-    prev: OrderBookLevel | undefined
-  ) => {
-    if (!prev) return true;
-    return current[1] !== prev[1]; // Compare sizes
-  };
 
   const topBids = useMemo(() => {
     const slicedBids = bids.slice(-MAX_ORDER_DISPLAY).reverse();
@@ -61,6 +53,10 @@ const OrderBook = memo(() => {
     );
   }, [asks, lastAsks, aggregationValue]);
 
+  if (!isValidPair) {
+    return <NoData />;
+  }
+
   if (!topBids.length && !topAsks.length) {
     return <Loader />;
   }
@@ -77,7 +73,7 @@ const OrderBook = memo(() => {
           highlight={highlight}
         />
       ))}
-      <Spread currency="USD" spreadAmnt={1} />
+      <Spread />
       {topAsks.map(({ price, size, key, highlight }) => (
         <MemoizedRowData
           key={key}

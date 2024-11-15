@@ -8,7 +8,7 @@ import {
 import { isAllowedPair } from '@app/utils/utils';
 import { useCallback, useEffect } from 'react';
 import useWebSocket from 'react-use-websocket';
-import { useExchangeStore } from './useExchangeStore';
+import useExchangeStore from './useExchangeStore';
 
 interface CoinbaseWSSub {
   type: 'subscribe' | 'unsubscribe';
@@ -19,6 +19,7 @@ interface CoinbaseWSSub {
 type WSMessageType = Level2Snapshot | Level2Data | TickerData;
 
 const useCoinbaseWebSocket = (coin: CoinPair) => {
+  // If invalid pair, do not establish WS
   if (!isAllowedPair(coin)) {
     return;
   }
