@@ -18,7 +18,7 @@ export interface Level2Data {
   time: string;
 }
 
-export type OrderBookLevel = [string, string];
+export type OrderBookLevel = [number, number];
 
 export interface BestOrders {
   bestBid: string;

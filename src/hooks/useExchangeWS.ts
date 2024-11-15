@@ -23,7 +23,7 @@ const useCoinbaseWebSocket = (coin: CoinPair) => {
     return;
   }
 
-  const { handleSnapshot, handleL2Update, handleTickerUpdate } =
+  const { handleSnapshot, handleL2Update, handleTickerUpdate, applyUpdates } =
     useExchangeStore();
 
   const handleMessage = useCallback(
@@ -37,6 +37,7 @@ const useCoinbaseWebSocket = (coin: CoinPair) => {
             break;
           case 'l2update':
             handleL2Update(parsedMessage);
+            applyUpdates();
             break;
           case 'ticker':
             handleTickerUpdate(parsedMessage);

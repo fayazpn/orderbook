@@ -1,9 +1,11 @@
+import { MAX_BOOK_LEVELS } from '@app/constants/app-constants';
 import {
   BestOrders,
   CoinPair,
   Level2Data,
   Level2Snapshot,
   OrderBookLevel,
+  OrderUpdate,
   TickerData,
 } from '@app/types/types';
 import { throttle } from 'lodash';
@@ -17,12 +19,20 @@ interface ExchangeState {
   currentPair: CoinPair;
   ticker: TickerData[];
   handleSnapshot: (snapshot: Level2Snapshot) => void;
-  handleBidUpdate: any;
-  handleAskUpdate: any;
+  // handleBidUpdate: any;
+  // handleAskUpdate: any;
+  // updateBids: (update: OrderUpdate) => void;
+  // updateAsks: (update: OrderUpdate) => void;
+  applyUpdates: () => void;
   handleL2Update: (update: Level2Data) => void;
   handleTickerUpdate: (ticker: TickerData) => void;
   switchPair: (newPair: CoinPair) => void;
 }
+
+const updateQueue: { bids: OrderUpdate[]; asks: OrderUpdate[] } = {
+  bids: [],
+  asks: [],
+};
 
 export const useExchangeStore = create<ExchangeState>()(
   devtools(
@@ -34,60 +44,53 @@ export const useExchangeStore = create<ExchangeState>()(
       ticker: [],
       handleSnapshot: (snapshot) => {
         set({
-          bids: snapshot.bids,
-          asks: snapshot.asks,
+          bids: snapshot.bids
+            .slice(0, MAX_BOOK_LEVELS)
+            .map(([p, s]) => [parseFloat(p), parseFloat(s)]),
+          asks: snapshot.asks
+            .slice(0, MAX_BOOK_LEVELS)
+            .map(([p, s]) => [parseFloat(p), parseFloat(s)]),
         });
       },
-
-      // Split update handler into two separate functions
-      handleBidUpdate: throttle((changes: Level2Data['changes']) => {
-        const bidUpdates = changes.filter(([side]) => side === 'buy');
-        if (bidUpdates.length === 0) return;
-
-        const state = get();
-        let newBids = [...state.bids];
-
-        bidUpdates.forEach(([_, price, size]) => {
-          const index = newBids.findIndex(([p]) => p === price);
-          if (Number(size) === 0) {
-            newBids = newBids.filter(([p]) => p !== price);
-          } else if (index !== -1) {
-            newBids[index] = [price, size];
-          } else {
-            newBids.push([price, size]);
-          }
-        });
-
-        set({ bids: newBids });
-      }, 250),
-
-      handleAskUpdate: throttle((changes: Level2Data['changes']) => {
-        const askUpdates = changes.filter(([side]) => side === 'sell');
-        if (askUpdates.length === 0) return;
-
-        const state = get();
-        let newAsks = [...state.asks];
-
-        askUpdates.forEach(([_, price, size]) => {
-          const index = newAsks.findIndex(([p]) => p === price);
-          if (Number(size) === 0) {
-            newAsks = newAsks.filter(([p]) => p !== price);
-          } else if (index !== -1) {
-            newAsks[index] = [price, size];
-          } else {
-            newAsks.push([price, size]);
-          }
-        });
-
-        set({ asks: newAsks });
-      }, 250),
 
       // Main update handler now calls separate bid/ask handlers
       handleL2Update: (update: Level2Data) => {
-        const { handleBidUpdate, handleAskUpdate } = get();
-        handleBidUpdate(update.changes);
-        handleAskUpdate(update.changes);
+        // const { handleBidUpdate, handleAskUpdate } = get();
+        // handleBidUpdate(update.changes);
+        // handleAskUpdate(update.changes);
+        const { currentPair } = get();
+
+        if (update.product_id !== currentPair) {
+          return;
+        }
+        update.changes.forEach((change) => {
+          if (change[0] === 'buy') {
+            updateQueue.bids.push(change);
+          } else {
+            // sell
+            updateQueue.asks.push(change);
+          }
+        });
       },
+
+      applyUpdates: throttle(() => {
+        const { bids, asks } = get();
+        const updatedBids = updateQueue.bids.reduce(
+          (acc, update) => updateOrders(acc, update),
+          bids
+        );
+        const updatedAsks = updateQueue.asks.reduce(
+          (acc, update) => updateOrders(acc, update),
+          asks
+        );
+
+        set({
+          bids: updatedBids.slice(0, MAX_BOOK_LEVELS),
+          asks: updatedAsks.slice(0, MAX_BOOK_LEVELS),
+        });
+        updateQueue.bids = [];
+        updateQueue.asks = [];
+      }, 1000),
 
       handleTickerUpdate: throttle(
         (ticker) =>
@@ -118,6 +121,8 @@ export const useExchangeStore = create<ExchangeState>()(
 
       switchPair: (newPair: CoinPair) => {
         if (newPair === get().currentPair) return;
+        updateQueue.bids = [];
+        updateQueue.asks = [];
         set({
           currentPair: newPair,
           bids: [],
@@ -130,3 +135,20 @@ export const useExchangeStore = create<ExchangeState>()(
     { name: 'exchange-store' }
   )
 );
+
+const updateOrders = (
+  orders: OrderBookLevel[],
+  update: OrderUpdate
+): OrderBookLevel[] => {
+  const [price, size] = update.slice(1).map(parseFloat);
+  const index = orders.findIndex(([p]) => p === price);
+
+  if (size === 0) {
+    return index > -1 ? orders.filter((_, i) => i !== index) : orders;
+  } else if (index > -1) {
+    return orders.map((order, i) => (i === index ? [price, size] : order));
+  } else {
+    const newOrders = [...orders, [price, size]];
+    return newOrders.sort((a, b) => a[0] - b[0]) as OrderBookLevel[];
+  }
+};
